@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Application</title>
+    <title>Enhanced Chat Application</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,6 +19,10 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
         #messages {
             height: 300px;
             overflow-y: scroll;
@@ -26,9 +30,20 @@
             margin-bottom: 10px;
             padding: 10px;
             border-radius: 4px;
+            background: #fafafa;
+        }
+        .message {
+            margin: 5px 0;
+        }
+        .timestamp {
+            font-size: 0.8em;
+            color: gray;
         }
         #messageInput {
-            width: calc(100% - 50px);
+            width: calc(100% - 80px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
         button {
             padding: 10px;
@@ -37,6 +52,7 @@
             color: white;
             border-radius: 4px;
             cursor: pointer;
+            margin-left: 10px;
         }
         button:hover {
             background-color: #0056b3;
@@ -44,11 +60,132 @@
         .hidden {
             display: none;
         }
+        .online {
+            color: green;
+        }
+        .offline {
+            color: red;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Chat Application</h2>
+    <h2>Enhanced Chat Application</h2>
     <div id="authSection">
-        <input type="text" id="username" placeholder="Username
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+        <div id="signupSection" class="hidden">
+            <input type="text" id="newUsername" placeholder="New Username" required>
+            <input type="password" id="newPassword" placeholder="New Password" required>
+            <button onclick="signup()">Sign Up</button>
+        </div>
+        <button onclick="toggleSignup()">Switch to Sign Up</button>
+    </div>
+    
+    <div id="chatSection" class="hidden">
+        <div id="messages"></div>
+        <input type="text" id="messageInput" placeholder="Type a message..." required>
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="logout()">Logout</button>
+        <div id="userStatus" class="online"></div>
+    </div>
+</div>
+
+<script>
+    let currentUser = '';
+
+    // Check if there is a saved username
+    window.onload = function() {
+        const savedUsername = localStorage.getItem('currentUsername');
+        if (savedUsername) {
+            document.getElementById('username').value = savedUsername;
+            document.getElementById('password').focus();
+        }
+    };
+
+    function toggleSignup() {
+        const authSection = document.getElementById('authSection');
+        const signupSection = document.getElementById('signupSection');
+        signupSection.classList.toggle('hidden');
+    }
+
+    function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const storedPassword = localStorage.getItem(username);
+        
+        if (storedPassword && storedPassword === password) {
+            currentUser = username;
+            localStorage.setItem('currentUsername', username); // Save current username
+            showChat();
+            updateUserStatus();
+        } else {
+            alert('Invalid username or password');
+        }
+    }
+
+    function signup() {
+        const newUsername = document.getElementById('newUsername').value;
+        const newPassword = document.getElementById('newPassword').value;
+
+        if (localStorage.getItem(newUsername)) {
+            alert('Username already exists');
+        } else {
+            localStorage.setItem(newUsername, newPassword);
+            alert('Sign up successful! You can log in now.');
+            toggleSignup();
+        }
+    }
+
+    function showChat() {
+        document.getElementById('authSection').classList.add('hidden');
+        document.getElementById('chatSection').classList.remove('hidden');
+    }
+
+    function logout() {
+        currentUser = '';
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('messageInput').value = '';
+        document.getElementById('messages').innerHTML = '';
+        document.getElementById('chatSection').classList.add('hidden');
+        document.getElementById('authSection').classList.remove('hidden');
+        localStorage.removeItem('currentUsername'); // Remove saved username on logout
+        document.getElementById('userStatus').textContent = '';
+    }
+
+    function sendMessage() {
+        const messageInput = document.getElementById('messageInput');
+        const message = messageInput.value;
+        const messagesDiv = document.getElementById('messages');
+
+        if (message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const newMessage = document.createElement('div');
+            newMessage.className = 'message';
+            newMessage.innerHTML = `<strong>${currentUser}</strong>: ${message} <span class="timestamp">(${timestamp})</span>`;
+            messagesDiv.appendChild(newMessage);
+            messageInput.value = '';
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Scroll to the bottom
+        }
+    }
+
+    // Update user status
+    function updateUserStatus() {
+        const userStatus = document.getElementById('userStatus');
+        userStatus.textContent = `${currentUser} is online`;
+        userStatus.classList.add('online');
+    }
+
+    // Allow sending messages with the Enter key
+    document.getElementById('messageInput').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+</script>
+
+</body>
+</html>
